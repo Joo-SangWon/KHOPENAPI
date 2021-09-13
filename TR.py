@@ -1,4 +1,3 @@
-import pandas as pd
 from pykiwoom.kiwoom import *
 import time
 
@@ -14,6 +13,7 @@ codes = kospi + kosdaq
 # 문장열로 오늘 날짜 얻기
 now = datetime.datetime.now()
 today = now.strftime('%Y%m%d')
+
 num = 1
 # 전 종목의 일봉 데이터
 # enumerate 몇 번째 반복문인지 확인하고 싶을때 튜플형태로 반환
@@ -21,6 +21,8 @@ num = 1
 # TR 요청 안했었음 한 번에 600개 행만 보내줌
 # 장시작까지는 8700개의 행이 필요함
 for i, code, in enumerate(codes):
+    if i < 627:
+        continue # 20210903 13:04 441까지하다가 lock걸림
     dfs=[]
     print(f"{i}/{len(codes)} {code}")
     df = kiwoom.block_request("opt10081",
@@ -41,7 +43,8 @@ for i, code, in enumerate(codes):
                                   next=2)
         dfs.append(df)
         num += 1
-        time.sleep(1.5)
+        # 시간 더 늘렸음 - 296번째에서 과도한 traffic 발생한다고 함
+        time.sleep(2.5)
 
     print("TR 추가 요청이 끝났습니다.")
     df = pd.concat(dfs)
@@ -49,6 +52,6 @@ for i, code, in enumerate(codes):
     out_name = f"{code}.xlsx"
 
     df.to_excel(out_name)
-    time.sleep(3.6)
+    time.sleep(4.5)
 
 print("ALL TR finished")
